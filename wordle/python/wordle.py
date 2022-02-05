@@ -30,7 +30,7 @@ To enter your bot in the "botfights_i" event:
 '''
 
 
-import sys, importlib, random, time, base64, json
+import sys, importlib.util, os.path, random, time, base64, json
 
 
 RANDOM_SEED = 'WORDLE'
@@ -104,11 +104,17 @@ def load_wordlist(fn):
     return a
 
 
+def stem(path):
+    """Return the final path component without its last suffix"""
+    return os.path.basename(path).rsplit(".")[0]
+
+
 def load_bot(s):
-    fn, func = s.split('.')
-    module = importlib.import_module(fn)
-    bot = getattr(module, func)
-    return bot
+    path, name = s.split("::")
+    spec = importlib.util.spec_from_file_location(stem(path), path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return getattr(mod, name)
 
 
 def get_play(bot, history):
@@ -264,7 +270,7 @@ def main(argv):
         if 1 < len(argv):
             wordlist = load_wordlist(argv[1])
         else:
-            wordlist = load_wordlist('wordlist.txt')
+            wordlist = load_wordlist(os.path.join(os.path.dirname(__file__), 'wordlist.txt'))
         secret = get_random().choice(list(wordlist))
         if 2 == len(argv):
             secret = argv[2]
