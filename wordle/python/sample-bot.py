@@ -1,13 +1,10 @@
 # sample-bot.py
 
 # sample bot to play wordle. see wordle.py for how to play.
-
-
+import os
 import random
 
-
-FN_WORDLIST = 'wordlist.txt'
-
+FN_WORDLIST = os.path.join(os.path.dirname(__file__), 'wordlist.txt')
 
 g_wordlist = None
 def get_wordlist():
