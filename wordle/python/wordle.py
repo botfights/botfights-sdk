@@ -259,6 +259,26 @@ def play_botfights(bot, username, password, event):
             break
 
 
+def read_env(path):
+    with open(path) as f:
+        return dict(
+            line.strip().split("=", maxsplit=1)
+            for line in f.readlines()
+        )
+
+
+def collect_credentials():
+    user_key = "BOTFIGHTS_USER"
+    pass_key = "BOTFIGHTS_PASS"
+    try:
+        return os.environ[user_key], os.environ[pass_key]
+    except KeyError:
+        pass
+
+    environ = read_env(".env")
+    return environ[user_key], environ[pass_key]
+
+
 def main(argv):
     if 0 == len(argv):
         print(USAGE)
@@ -312,7 +332,11 @@ def main(argv):
         return x
     elif 'botfights' == c:
         bot = load_bot(argv[1])
-        username, password, event = argv[2:5]
+        try:
+            username, password, event = argv[2:5]
+        except ValueError:
+            username, password = collect_credentials()
+            event = argv[2]
         play_botfights(bot, username, password, event)
     elif 'api' == c:
         username = argv[1]
